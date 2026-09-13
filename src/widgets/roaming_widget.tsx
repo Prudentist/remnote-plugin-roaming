@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   usePlugin,
   renderWidget,
@@ -18,7 +18,9 @@ import { drawRandomCandidate, syncAllRemIds } from '../services/roamEngine';
 export function RoamingWidget() {
   const plugin = usePlugin();
 
-  // Dialog and UI states
+  // Dialog, Container and UI states
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState<number>(260);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [dark, setDark] = useState<boolean>(() =>
     typeof document !== 'undefined' ? document.body.classList.contains('dark') : false
@@ -26,6 +28,23 @@ export function RoamingWidget() {
   const [currentRemId, setCurrentRemId] = useState<string>('');
   const [isRoaming, setIsRoaming] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
+
+  // Measure container width for responsive minimalist narrow layout
+  useEffect(() => {
+    if (!containerRef.current || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect && entry.contentRect.width > 0) {
+          setContainerWidth(entry.contentRect.width);
+        }
+      }
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const isNarrow = containerWidth < 220;
+  const isUltraNarrow = containerWidth < 140;
 
   // Persistent user state
   const [roamCount, setRoamCount] = useLocalStorageState<number>('roamcount', 0);
@@ -243,11 +262,13 @@ export function RoamingWidget() {
   // Render Full Dashboard View
   return (
     <div
+      ref={containerRef}
       className={clsx(
-        'w-full min-w-0 box-border overflow-hidden rounded-xl p-3 flex flex-col gap-2.5 transition-colors border shadow-sm',
+        'w-full min-w-0 box-border overflow-hidden rounded-xl transition-all border shadow-sm',
+        isNarrow ? 'p-2.5 gap-2 flex flex-col' : 'p-3 flex flex-col gap-2.5',
         dark
-          ? 'bg-gray-900/60 border-gray-800 text-gray-100'
-          : 'bg-white/80 border-gray-200/80 text-gray-800'
+          ? 'bg-zinc-900/80 border-zinc-800 text-zinc-100'
+          : 'bg-white/90 border-zinc-200/80 text-zinc-800'
       )}
     >
       {/* Reset Confirmation Dialog */}
@@ -261,14 +282,14 @@ export function RoamingWidget() {
       )}
 
       {/* Header / Stats Summary Bar */}
-      <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 text-xs border-b pb-2 border-gray-200 dark:border-gray-800">
+      <div className="flex items-center justify-between text-xs border-b pb-1.5 border-zinc-200/70 dark:border-zinc-800/70">
         <button
           type="button"
           onClick={() => setDialogOpen(true)}
           title="Reset statistics"
-          className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-red-500 dark:text-gray-400 transition-colors"
+          className="p-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors active:scale-95"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -278,39 +299,44 @@ export function RoamingWidget() {
           </svg>
         </button>
 
-        {/* Counters */}
-        <div className="min-w-0 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 font-mono text-[10px] leading-tight">
-          <span
-            title="Blocked Rem count"
-            className="text-red-600 dark:text-red-400 font-medium"
-          >
-            B:{blockSetArr?.length || 0}
+        {isNarrow ? (
+          <span className="font-mono text-[10px] font-semibold tracking-wider text-indigo-600 dark:text-indigo-400 uppercase">
+            {progress.currentTitle}
           </span>
-          <span
-            title="Exp needed for next level"
-            className="text-amber-600 dark:text-amber-400 font-medium"
-          >
-            N:{progress.expToNextLevel}
-          </span>
-          <span
-            title="Current Level"
-            className="text-yellow-600 dark:text-yellow-400 font-semibold"
-          >
-            L:{progress.currentLevel}
-          </span>
-          <span
-            title="Total unique Rems roamed"
-            className="text-emerald-600 dark:text-emerald-400 font-medium"
-          >
-            R:{roamedSetArr?.length || 0}
-          </span>
-          <span
-            title="Total Rem count in pool"
-            className="text-cyan-600 dark:text-cyan-400 font-medium"
-          >
-            T:{allRems?.length || 0}
-          </span>
-        </div>
+        ) : (
+          <div className="min-w-0 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 font-mono text-[10px] leading-tight">
+            <span
+              title="Blocked Rem count"
+              className="text-red-600 dark:text-red-400 font-medium"
+            >
+              B:{blockSetArr?.length || 0}
+            </span>
+            <span
+              title="Exp needed for next level"
+              className="text-amber-600 dark:text-amber-400 font-medium"
+            >
+              N:{progress.expToNextLevel}
+            </span>
+            <span
+              title="Current Level"
+              className="text-yellow-600 dark:text-yellow-400 font-semibold"
+            >
+              L:{progress.currentLevel}
+            </span>
+            <span
+              title="Total unique Rems roamed"
+              className="text-emerald-600 dark:text-emerald-400 font-medium"
+            >
+              R:{roamedSetArr?.length || 0}
+            </span>
+            <span
+              title="Total Rem count in pool"
+              className="text-cyan-600 dark:text-cyan-400 font-medium"
+            >
+              T:{allRems?.length || 0}
+            </span>
+          </div>
+        )}
 
         {/* Sync Pool Button */}
         <button
@@ -319,12 +345,12 @@ export function RoamingWidget() {
           disabled={isSyncing}
           title="Refresh / Sync Rem pool cache"
           className={clsx(
-            'p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-indigo-500 dark:text-gray-400 transition-colors',
+            'p-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:scale-95',
             isSyncing && 'cursor-not-allowed opacity-60'
           )}
         >
           <svg
-            className={clsx('w-4 h-4', isSyncing && 'animate-spin text-indigo-500')}
+            className={clsx('w-3.5 h-3.5', isSyncing && 'animate-spin text-indigo-600 dark:text-indigo-400')}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -340,24 +366,33 @@ export function RoamingWidget() {
       </div>
 
       {/* Main Counter Display */}
-      <div className="flex min-w-0 flex-col items-center justify-center my-1">
-        <SAnimatedNumbers value={roamCount || 0} fontSize={54} dark={dark} />
+      <div className="flex min-w-0 flex-col items-center justify-center my-0.5">
+        <SAnimatedNumbers
+          value={roamCount || 0}
+          fontSize={isUltraNarrow ? 28 : isNarrow ? 36 : 52}
+          dark={dark}
+        />
 
         {/* Title & Level Info */}
-        <div className="mt-1 flex flex-col items-center gap-1">
-          <div
-            className={clsx(
-              'font-mono text-sm font-bold tracking-wide uppercase px-2.5 py-0.5 rounded-full',
-              dark
-                ? 'bg-indigo-950/70 text-indigo-300 border border-indigo-800/50'
-                : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-            )}
-          >
-            {progress.currentTitle}
-          </div>
+        <div className="mt-1 flex flex-col items-center gap-1 w-full max-w-[140px]">
+          {!isNarrow && (
+            <div
+              className={clsx(
+                'font-mono text-xs font-bold tracking-wide uppercase px-2.5 py-0.5 rounded-full',
+                dark
+                  ? 'bg-indigo-950/70 text-indigo-300 border border-indigo-800/50'
+                  : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+              )}
+            >
+              {progress.currentTitle}
+            </div>
+          )}
 
           {/* Level Progress Bar */}
-          <div className="w-36 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mt-1">
+          <div
+            className="w-full h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden"
+            title={`${progress.progressPercent}% to next level`}
+          >
             <div
               className="h-full bg-indigo-500 transition-all duration-500 rounded-full"
               style={{ width: `${progress.progressPercent}%` }}
@@ -366,34 +401,34 @@ export function RoamingWidget() {
         </div>
       </div>
 
-      {/* Action Controls */}
-      <div className="flex min-w-0 items-center justify-between gap-2 pt-1">
-        <button
-          type="button"
-          onClick={handleBlock}
-          disabled={isRoaming || !currentRemId}
-          title="Block current Rem from future roaming"
-          className={clsx(
-            'flex-1 py-2 px-3 text-xs font-semibold rounded-lg border border-dashed transition-all active:scale-98',
-            dark
-              ? 'border-red-400/50 text-red-300 hover:bg-red-950/30'
-              : 'border-red-400 text-red-600 hover:bg-red-50',
-            (!currentRemId || isRoaming) && 'opacity-40 cursor-not-allowed'
-          )}
-        >
-          Block
-        </button>
+      {/* Narrow Minimalist Secondary Metrics */}
+      {isNarrow && (
+        <div className="grid grid-cols-2 gap-1 py-1 px-1.5 rounded-lg bg-zinc-100/60 dark:bg-zinc-800/40 text-[10px] font-mono text-zinc-600 dark:text-zinc-400 text-center">
+          <div title="Current Level & Next Milestone">
+            <span className="text-zinc-400 dark:text-zinc-500">Lv.</span>{progress.currentLevel}
+            <span className="text-zinc-400 dark:text-zinc-500"> +{progress.expToNextLevel}</span>
+          </div>
+          <div title="Unique Rems roamed">
+            <span className="text-zinc-400 dark:text-zinc-500">Roamed: </span>
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400">{roamedSetArr?.length || 0}</span>
+          </div>
+        </div>
+      )}
 
+      {/* Action Controls */}
+      <div className={clsx('flex min-w-0 pt-1', isNarrow ? 'flex-col gap-1.5' : 'items-center justify-between gap-2')}>
+        {/* Primary Roam CTA */}
         <button
           type="button"
           onClick={handleRoam}
           disabled={isRoaming}
           className={clsx(
-            'flex-[2] py-2 px-4 text-xs font-semibold rounded-lg shadow-sm text-white transition-all active:scale-98 flex items-center justify-center gap-1.5',
+            'w-full py-2 px-3 text-xs font-semibold rounded-lg shadow-sm text-white transition-all active:scale-[0.98] flex items-center justify-center gap-1.5',
             dark
-              ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
-              : 'bg-indigo-600 hover:bg-indigo-700 text-white',
-            isRoaming && 'opacity-70 cursor-not-allowed'
+              ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-950/40'
+              : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-100',
+            isRoaming && 'opacity-70 cursor-not-allowed',
+            !isNarrow && 'flex-[2]'
           )}
         >
           {isRoaming ? (
@@ -422,7 +457,7 @@ export function RoamingWidget() {
           ) : (
             <>
               <svg
-                className="w-3.5 h-3.5"
+                className="w-3.5 h-3.5 shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -440,9 +475,35 @@ export function RoamingWidget() {
                   d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <span>Roam</span>
+              <span>Roam{isNarrow ? '' : ' Random'}</span>
             </>
           )}
+        </button>
+
+        {/* Secondary Block Action */}
+        <button
+          type="button"
+          onClick={handleBlock}
+          disabled={isRoaming || !currentRemId}
+          title="Block current Rem from future roaming"
+          className={clsx(
+            'py-1.5 px-2 text-[11px] font-medium rounded-lg border border-dashed transition-all active:scale-[0.98] flex items-center justify-center gap-1',
+            dark
+              ? 'border-red-400/40 text-red-300 hover:bg-red-950/30'
+              : 'border-red-400/60 text-red-600 hover:bg-red-50',
+            (!currentRemId || isRoaming) && 'opacity-40 cursor-not-allowed',
+            isNarrow ? 'w-full' : 'flex-1'
+          )}
+        >
+          <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+            />
+          </svg>
+          <span>Block Rem</span>
         </button>
       </div>
     </div>

@@ -75,19 +75,23 @@ export function SAnimatedNumbers({ value, fontSize = 48, dark = false }: SAnimat
           items={items}
           keys={(item: AnimatedItem) => item.key}
           from={({ y }) => ({ y: -y * 0.7, opacity: 0 })}
-          enter={({ x }) => ({ y: 0, x, opacity: 1 })}
+          enter={() => ({ y: 0, opacity: 1 })}
+          leave={({ y }) => ({ y: y * 0.7, opacity: 0 })}
           config={springConfig}
           trail={30}
         >
-          {({ opacity, x, y }, item: AnimatedItem) => (
+          {({ opacity, y }, item: AnimatedItem) => (
             <animated.span
-              className="absolute left-0"
+              className="absolute top-0"
               style={{
                 opacity,
+                left: item.x,
                 width: separators.includes(item.value) ? separatorWidth : fontWidth,
+                height: fontSize * 1.2,
+                lineHeight: `${fontSize * 1.2}px`,
                 textAlign: 'center',
                 fontSize,
-                transform: `translate3d(${x}px, ${y}px, 0px)`,
+                transform: y.to((val: number) => `translate3d(0px, ${val}px, 0px)`),
               }}
             >
               {item.value}
