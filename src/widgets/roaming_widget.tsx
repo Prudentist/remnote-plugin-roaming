@@ -244,7 +244,7 @@ export function RoamingWidget() {
   return (
     <div
       className={clsx(
-        'w-full rounded-xl p-3.5 flex flex-col gap-3 transition-colors border shadow-sm',
+        'w-full min-w-0 box-border overflow-hidden rounded-xl p-3 flex flex-col gap-2.5 transition-colors border shadow-sm',
         dark
           ? 'bg-gray-900/60 border-gray-800 text-gray-100'
           : 'bg-white/80 border-gray-200/80 text-gray-800'
@@ -261,7 +261,7 @@ export function RoamingWidget() {
       )}
 
       {/* Header / Stats Summary Bar */}
-      <div className="flex items-center justify-between text-xs border-b pb-2 border-gray-200 dark:border-gray-800">
+      <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 text-xs border-b pb-2 border-gray-200 dark:border-gray-800">
         <button
           type="button"
           onClick={() => setDialogOpen(true)}
@@ -279,7 +279,7 @@ export function RoamingWidget() {
         </button>
 
         {/* Counters */}
-        <div className="flex items-center gap-2 font-mono text-[11px]">
+        <div className="min-w-0 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 font-mono text-[10px] leading-tight">
           <span
             title="Blocked Rem count"
             className="text-red-600 dark:text-red-400 font-medium"
@@ -340,7 +340,7 @@ export function RoamingWidget() {
       </div>
 
       {/* Main Counter Display */}
-      <div className="flex flex-col items-center justify-center my-1">
+      <div className="flex min-w-0 flex-col items-center justify-center my-1">
         <SAnimatedNumbers value={roamCount || 0} fontSize={54} dark={dark} />
 
         {/* Title & Level Info */}
@@ -367,7 +367,7 @@ export function RoamingWidget() {
       </div>
 
       {/* Action Controls */}
-      <div className="flex items-center justify-between gap-3 pt-1">
+      <div className="flex min-w-0 items-center justify-between gap-2 pt-1">
         <button
           type="button"
           onClick={handleBlock}

@@ -25,7 +25,11 @@ export function SAnimatedNumbers({ value, fontSize = 48, dark = false }: SAnimat
   const valueStr = numValue.toLocaleString();
   const valueStrArray = valueStr.split('');
 
-  const fontWidth = fontSize * 0.55;
+  // Give every character an explicit box. The previous fixed offset was
+  // narrower than the rendered monospace glyphs, which made two-digit values
+  // overlap in the sidebar.
+  const fontWidth = fontSize * 0.62;
+  const separatorWidth = fontSize * 0.36;
 
   const { items, totalWidth } = valueStrArray.reduce(
     (acc, val, i) => {
@@ -33,18 +37,20 @@ export function SAnimatedNumbers({ value, fontSize = 48, dark = false }: SAnimat
       const currentItem: AnimatedItem = {
         value: val,
         x: 0,
-        y: fontWidth,
+        y: fontSize,
         key: `${i}-${val}`,
       };
 
       if (precedingItem) {
-        currentItem.x = separators.includes(precedingItem.value)
-          ? precedingItem.x + fontWidth * 0.4
-          : precedingItem.x + fontWidth;
+        currentItem.x = precedingItem.x +
+          (separators.includes(precedingItem.value) ? separatorWidth : fontWidth);
       }
 
       acc.items.push(currentItem);
-      acc.totalWidth = Math.max(acc.totalWidth, currentItem.x + fontWidth);
+      acc.totalWidth = Math.max(
+        acc.totalWidth,
+        currentItem.x + (separators.includes(val) ? separatorWidth : fontWidth)
+      );
 
       return acc;
     },
@@ -78,6 +84,8 @@ export function SAnimatedNumbers({ value, fontSize = 48, dark = false }: SAnimat
               className="absolute left-0"
               style={{
                 opacity,
+                width: separators.includes(item.value) ? separatorWidth : fontWidth,
+                textAlign: 'center',
                 fontSize,
                 transform: `translate3d(${x}px, ${y}px, 0px)`,
               }}
