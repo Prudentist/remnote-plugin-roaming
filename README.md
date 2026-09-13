@@ -28,6 +28,8 @@ you can update the cache by clicking the button in the upper right corner
 
 ## Donate
 
+> **Note**: All donations go directly to the original author ([@esrever10](https://github.com/esrever10)). Special thanks to him for creating this wonderful plugin and for his dedication!
+
 - http://paypal.me/esrever10
 - https://afdian.net/a/esrever10
 - Weixin Donate：
