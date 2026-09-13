@@ -1,3 +1,7 @@
+import { PluginRem } from '@remnote/plugin-sdk';
+
+export type Rem = PluginRem;
+
 export interface LevelConfig {
   threshold: number;
   title: string;

@@ -36,9 +36,10 @@ export function DebugWidget() {
   const [info, setInfo] = useState<Map<string, any>>(new Map());
   const plugin = usePlugin();
 
-  useOnMessageBroadcast('log', (message) => {
-    if (typeof message === 'string') {
-      setLogs((prev) => [...prev, message]);
+  useOnMessageBroadcast((data: any) => {
+    const text = typeof data === 'object' && data !== null ? data.data || data.message : data;
+    if (text) {
+      setLogs((prev) => [...prev, String(text)]);
     }
   });
 

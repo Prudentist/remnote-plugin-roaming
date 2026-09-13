@@ -1,7 +1,9 @@
+(global as any).self = global;
 import assert from 'assert';
 import { parseLevelConfig, calculateLevelProgress } from '../src/services/levelService';
 import { isValidRoamCandidate } from '../src/services/roamEngine';
-import { BuiltInPowerupCodes, Rem } from '@remnote/plugin-sdk';
+import { BuiltInPowerupCodes } from '@remnote/plugin-sdk';
+import { Rem } from '../src/types';
 
 function runLevelServiceTests() {
   console.log('Testing levelService...');
@@ -129,7 +131,7 @@ async function runRoamEngineTests() {
 
   // Test 7: Uploaded file rejection
   const fileRem = createMockRem({
-    hasPowerup: async (code) => code === BuiltInPowerupCodes.UploadedFile,
+    hasPowerup: async (code: any) => code === BuiltInPowerupCodes.UploadedFile,
   });
   assert.strictEqual(await isValidRoamCandidate(fileRem, blockSet), false);
 

@@ -2,11 +2,12 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   usePlugin,
   renderWidget,
-  useTracker,
+  useTrackerPlugin as useTracker,
   useLocalStorageState,
   AppEvents,
   useAPIEventListener,
   useOnMessageBroadcast,
+  RNPlugin,
 } from '@remnote/plugin-sdk';
 import clsx from 'clsx';
 import { SAnimatedNumbers } from './animated_number';
@@ -37,15 +38,15 @@ export function RoamingWidget() {
 
   // Reactive plugin settings
   const isSimpleView = useTracker(
-    async (rp) => (await rp.settings.getSetting('roaming_mode')) as boolean
+    async (rp: RNPlugin) => (await rp.settings.getSetting('roaming_mode')) as boolean
   ) ?? false;
 
   const levelCustom = useTracker(
-    async (rp) => (await rp.settings.getSetting('level_custom')) as string
+    async (rp: RNPlugin) => (await rp.settings.getSetting('level_custom')) as string
   ) ?? '';
 
   const includeDocuments = useTracker(
-    async (rp) => (await rp.settings.getSetting('include_documents')) as boolean
+    async (rp: RNPlugin) => (await rp.settings.getSetting('include_documents')) as boolean
   ) ?? false;
 
   // Derived level progression (pure calculation via useMemo)
@@ -147,8 +148,11 @@ export function RoamingWidget() {
   ]);
 
   // Handle Roam message broadcast from commands/hotkeys
-  useOnMessageBroadcast('roam', () => {
-    handleRoam();
+  useOnMessageBroadcast((data: any) => {
+    const msg = typeof data === 'object' && data !== null ? data.message : data;
+    if (msg === 'roam') {
+      handleRoam();
+    }
   });
 
   // Block Current Rem

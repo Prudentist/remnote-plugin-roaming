@@ -1,5 +1,5 @@
-import { BuiltInPowerupCodes, Rem, RNPlugin } from '@remnote/plugin-sdk';
-import { RoamCandidateResult, RoamFilterOptions } from '../types';
+import { BuiltInPowerupCodes, RNPlugin } from '@remnote/plugin-sdk';
+import { Rem, RoamCandidateResult, RoamFilterOptions } from '../types';
 
 /**
  * Checks if a Rem's rich text contains readable, meaningful text content.
@@ -9,7 +9,7 @@ function hasMeaningfulText(rem: Rem): boolean {
     return false;
   }
 
-  return rem.text.some((part) => {
+  return rem.text.some((part: any) => {
     if (typeof part === 'string') {
       return part.trim().length > 0;
     }
