@@ -26,10 +26,6 @@ you can update the cache by clicking the button in the upper right corner
 
 ![](https://raw.githubusercontent.com/esrever10/remnote-plugin-roaming/main/images/light.png)
 
-## Feedback
-
-- Discord: esrever10#6879
-
 ## Donate
 
 - http://paypal.me/esrever10
